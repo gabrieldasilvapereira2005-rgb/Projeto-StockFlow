@@ -79,7 +79,7 @@ Detalhes completos estao em `docs/REGRAS_DE_NEGOCIO.md`.
 - SQLite e destinado ao uso local desta demonstracao; não foi feita homologacao para varios operadores simultaneos.
 - Nao ha tarefa automática para expirar reservas vencidas.
 - Solicitacao de reposição não cria ordem de compra formal.
-- Nao existe suite automatizada de testes Java nesta distribuição.
+- A suíte JUnit 5 contém 19 testes de integração do serviço e da persistência SQLite; ela não substitui testes da interface nem testes formais de concorrência.
 - O driver SQLite e baixado via Maven na primeira execução e depende de acesso ao repositorio de dependências.
 - O pacote não inclui Maven Wrapper; Apache Maven precisa ser instalado separadamente e adicionado ao PATH.
 - Nao ha benchmark de carga nem teste formal de concorrencia multiusuario.
@@ -113,6 +113,23 @@ mvn -q compile exec:java
 
 Ou execute `INICIAR_STOCKFLOW.bat` com dois cliques. O inicializador muda o diretório de trabalho para a própria pasta antes de chamar Maven.
 
+### Executar os testes automatizados
+
+Na pasta `StockFlow_Java`, execute:
+
+```powershell
+mvn test
+```
+
+O Maven compila o código e executa os testes JUnit 5. O relatório de cada execução fica em `target/surefire-reports/`. Os testes usam bancos SQLite temporários criados pelo JUnit e não acessam nem alteram o arquivo `stockflow.db` utilizado pelo aplicativo. Também é possível executar `EXECUTAR_TESTES.bat` com dois cliques no Windows; o arquivo mantém a janela aberta para mostrar o resultado.
+
+Para executar os testes e, em seguida, abrir a aplicação:
+
+```powershell
+mvn test
+mvn -q exec:java
+```
+
 ### Compilar sem iniciar
 
 ```powershell
@@ -126,7 +143,7 @@ O programa abre `stockflow.db` no diretório de trabalho atual. Para utilizar se
 ## 8. O que eu faria diferente em um ambiente real de produção
 
 - Separaria a classe atual em pacotes de interface Swing, serviços de aplicação, domínio e repositórios JDBC, facilitando manutenção e testes.
-- Criaria testes unitários com JUnit e testes de integração para persistência SQLite, regras de reserva, bloqueio e recebimento.
+- Ampliaria a suíte existente com testes unitários de domínio, testes de interface e cenários de concorrência, além dos testes de integração já incluídos.
 - Executaria consultas demoradas fora da Event Dispatch Thread com `SwingWorker`, mantendo atualizações de componentes na EDT.
 - Adicionaria autenticação, perfis, trilha de auditoria, logs estruturados, backup automático e testes de restauração.
 - Para operação simultânea em várias estações, avaliaria banco servidor e controle transacional adequado, em vez de compartilhar um arquivo SQLite.
@@ -137,9 +154,12 @@ O programa abre `stockflow.db` no diretório de trabalho atual. Para utilizar se
 | Caminho relativo | Conteudo |
 |---|---|
 | `src/main/java/stockflow/StockFlowApp.java` | Interface Swing, servico interno, regras, JDBC e exportação CSV. |
-| `pom.xml` | Versao Java, driver SQLite JDBC, plugin de compilação e plugin de execução Maven. |
+| `pom.xml` | Versao Java, driver SQLite JDBC, JUnit 5, Maven Surefire e plugins Maven. |
+| `src/test/java/stockflow/StockFlowServiceTest.java` | Testes automatizados de integração das regras de estoque e persistência SQLite. |
+| `docs/TESTES_AUTOMATIZADOS.md` | Escopo, cobertura e instruções dos testes automatizados. |
 | `stockflow.db` | Banco SQLite independente desta edição. |
 | `INICIAR_STOCKFLOW.bat` | Inicializador Windows que executa Maven a partir da pasta do projeto. |
+| `EXECUTAR_TESTES.bat` | Executa a suíte de testes automatizados e mantém o resultado visível no Windows. |
 | `docs/REGRAS_DE_NEGOCIO.md` | Politicas percentuais, de categoria, entrada, saída, reservas e bloqueios. |
 | `docs/MAPA_DE_FUNCIONALIDADES.md` | Abas, botoes, campos e arquivos Java. |
 | `docs/MANUAL_PARA_UTILIZACAO_DA_FERRAMENTA.md` | Tutorial para instalar e utilizar a edição Java. |
